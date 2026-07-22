@@ -5,6 +5,7 @@ import { workflow } from "./data/workflow"
 
 import { CollapsiblesSchema, fieldsSchema } from "./schemas"
 import { tokensCounter } from "./utils/tokensConsumption"
+import { sanitizeHTML } from "./utils/sanitizeHTML"
 
 type CollapsiblesType = {
     collapsibles: {
@@ -38,7 +39,7 @@ async function main() {
     // console.log(websiteURLResponse.text)
     counter.incrementConsumption(websiteURLUsage)
     const currentPage = await createSession(websiteURLResponseText)
-    let formHTML = await currentPage.locator("form").innerHTML()
+    let formHTML = await sanitizeHTML(currentPage.locator("form"))
 
     const {text: collapsiblesResponseText, usage: collapsiblesUsage} = await generateText({
         model,
@@ -64,7 +65,7 @@ async function main() {
         // open collapsible if it's collapsed
         if (collapsed) {
             await currentPage.getByRole("button", { name: collapsibleName }).click()
-            formHTML = await currentPage.locator("form").innerHTML()
+            formHTML = await sanitizeHTML(currentPage.locator("form"))
         }
 
         // find all fillable fields in the HTML
