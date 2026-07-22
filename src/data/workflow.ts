@@ -12,4 +12,5 @@ export const workflow: string = `
     8. Level: Undergraduate
     9. Major: Computer Science
     10. GPA: 3.8
+3. Submit the form.
 `

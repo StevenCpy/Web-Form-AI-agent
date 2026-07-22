@@ -6,7 +6,9 @@
 - run/sendWorkflow.ts simulates sending a workflow to the AI agent.
 
 **How AI agent works:**
-- On receiving a workflow, it extracts the navigation URL, opens a Playwright browser and navigates to that page.
-- It then extracts the form HTML, sanitizes it, and identifies all hidden sections.
-- It opens each sections and fills out the fields based on the information in the workflow.
-- Finally, it submits the form and closes the Playwright browser.
+- It receives a set of tools that allows it to:
+    - navigate to a URL
+    - open a hidden section
+    - fill out fields
+    - submit a form
+- On receiving a workflow for filling out a web form, it uses the given tools to execute the workflow, one tool per step.
