@@ -1,5 +1,5 @@
 import { generateText, Output } from "ai"
-import model from "./utils/model"
+import model from "./model"
 import { createSession } from "./utils/browserSession"
 
 import { CollapsiblesSchema, fieldsSchema } from "./schemas"

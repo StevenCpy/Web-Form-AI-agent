@@ -5,7 +5,8 @@
   "license": "MIT",
   "author": "",
   "scripts": {
-    "dev": "tsx ./src/main.ts && tsx ./src/run/sendWorkflow.ts"
+    "dev": "tsx ./src/main.ts",
+    "example": "tsx ./src/run/sendWorkflow.ts"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
