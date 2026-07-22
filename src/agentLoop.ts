@@ -1,15 +1,13 @@
-import { generateText, isStepCount, ModelMessage, Output, stepCountIs } from "ai"
-import { Page } from "playwright"
+import { generateText, ModelMessage, Output, stepCountIs } from "ai"
 import model from "./model"
 import { createSession } from "./utils/browserSession"
 
-import { CollapsiblesSchema, fieldsSchema } from "./schemas"
 import { tokensCounter } from "./utils/tokensConsumption"
-import { sanitizeHTML } from "./utils/sanitizeHTML"
 
 // tools
 import { createNavigateToURLTool } from "./tools/navigateToURLTool"
 import { createFillFieldsTool } from "./tools/fillFieldsTool"
+import { createExpandSectionTool } from "./tools/expandSectionTool"
 
 export async function queryAgentLoop(workflow: string) {
     console.log("Querying agent...")
@@ -23,8 +21,9 @@ export async function queryAgentLoop(workflow: string) {
             Here's a workflow:
             ${workflow}
             Your job is to complete this workflow.
-            1. Navigate to the URL
-            2. Fill in the fields you see in the HTML once you get the HTML
+            1. Navigate to the URL.
+            2. Fill in the fields you see in the HTML once you get the HTML.
+            3. Expand any hidden section you find and fill out those fields as well.
         `
     }]
 
@@ -42,13 +41,15 @@ export async function queryAgentLoop(workflow: string) {
                 You have the following tools:
                 1. navigateToURL - allows you to navigate to the URL.  This returns a sanitized HTML of the form.
                 2. fillFields - this finds all the fields visible in the HTML of the page, and fills them out.
+                3. expandSection - this expands a section, possibly uncovering more fields.  If you opened a section, fill out those fields before trying to open another section.
             `,
             messages: messages,
             tools: {
                 navigateToURL: createNavigateToURLTool(currentPage),
-                fillFields: createFillFieldsTool(currentPage)
+                fillFields: createFillFieldsTool(currentPage),
+                expandSection: createExpandSectionTool(currentPage)
             },
-            stopWhen: stepCountIs(5)
+            stopWhen: stepCountIs(10)
         })
 
         ++i
@@ -57,7 +58,7 @@ export async function queryAgentLoop(workflow: string) {
         console.log()
         steps.forEach(step => {
             console.log(step.stepNumber)
-            step.toolCalls.forEach(toolCall => console.log(toolCall, toolCall.toolName, toolCall.input))
+            step.toolCalls.forEach(toolCall => console.log(toolCall.toolName, toolCall.input))
             console.log()
         })
         messages.forEach(message => console.log(message))
