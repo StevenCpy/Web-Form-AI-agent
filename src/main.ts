@@ -47,7 +47,7 @@ async function main() {
         prompt:`
             Here's the HTML of a page containing a form: 
             ${pageHTML}
-            Return the names of the collapsible sections in the HTML.
+            Find the names of all collapsible sections, and return which ones are expanded or hidden by looking at all the clues combined.
         `
     })
     console.log(collapsiblesResponse.text)
@@ -84,7 +84,7 @@ async function main() {
         // fill each "select" field found by the LLM
         for (const {fieldName, type, value} of fieldsJSON["fields"]) {
             if (type == "select") {
-                await currentPage.locator(`input[name="${fieldName}"]`).selectOption(value)
+                await currentPage.locator(`select[name="${fieldName}"]`).selectOption(value)
             } else if (type == "input") {
                 await currentPage.locator(`input[name="${fieldName}"]`).fill(value)
             }
