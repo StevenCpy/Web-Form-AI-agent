@@ -1,18 +1,29 @@
-import { generateText } from "ai"
+import { generateText, Output } from "ai"
 import model from "./utils/model"
 import { createSession } from "./utils/browserSession"
 import { workflow } from "./data/workflow"
 
+import { CollapsiblesSchema, SelectsSchema, InputsSchema } from "./schemas"
+
 type CollapsiblesType = {
-    [collapsibleName: string]: {collapsed: boolean}
+    collapsibles: {
+        collapsibleName: string
+        collapsed: boolean
+    }[]
 }
 
 type SelectsType = {
-    [label: string]: string
+    selects: {
+        fieldName: string
+        value: string
+    }[]
 }
 
 type InputsType = {
-    [label: string]: string
+    inputs: {
+        fieldName: string
+        value: string
+    }[]
 }
 
 async function main() {
@@ -35,83 +46,80 @@ async function main() {
     
     const collapsiblesResponse = await generateText({
         model,
+        output: Output.object({
+            schema: CollapsiblesSchema
+        }),
         prompt:`
-            <context>
-            Your role is to extract information as you see them in the HTML.
-            </context>
-
-            <input>
             Here's the HTML of a page containing a form: 
             ${pageHTML}
-            </input>
-
-            <task>
-            Find all collapsibles in the form and return an array of JSON objects of the form [{collapsibleName: string, collapsed: bool}, ...]
-            where collapsibleName is the name of the section
-            and collapsed indicates whether the section is collapsed or not.
-            </task>
+            Find all the collapsibles in that page, where "collapsed" indicates whether the section is collapsed or not.
         `
     })
     console.log(collapsiblesResponse.text)
-    const collapsibles: CollapsiblesType = JSON.parse(collapsiblesResponse.text)
+    const collapsiblesJSON: CollapsiblesType = JSON.parse(collapsiblesResponse.text)
 
     // open all collapsibles and fill out the fields
-    for (const collapsible in collapsibles) {
+    for (const {collapsibleName, collapsed} of collapsiblesJSON["collapsibles"]) {
         // open collapsible if it's collapsed
-        if (collapsibles[collapsible].collapsed) {
-            await currentPage.getByRole("button", { name: collapsible }).click()
+        if (collapsed) {
+            await currentPage.getByRole("button", { name: collapsibleName }).click()
             pageHTML = await currentPage.content()
         }
 
         // find all fillable "select" fields in the HTML
         const selectsResponse = await generateText({
             model,
+            output: Output.object({
+                schema: SelectsSchema
+            }),
             prompt:`
                 Here's the HTML of a page containing a form:
                 ${pageHTML}
                 Here's a workflow:
                 ${workflow}
-                Find all "select" field names in the HTML and return a single JSON of the form {fieldName: value, ...}.
-                Replace each fieldName with the actual field name,
-                and value with the value that would be filled in from the Student information in (2) from the workflow.
-                Do NOT include names for "input" fields in the JSON.
+                Find all "select" field names in the HTML.
+
+                fieldName is the actual field name
+                and value is the value that would be filled in from the Student information in (2) from the workflow.
+
                 If there's no corresponding value from the Student information, don't include the fieldName.
                 The JSON should only include fieldNames for the fields that are present in the HTML.
-                Return ONLY the JSON, no explanations and no "json" in the output.
             `
         })
         console.log(selectsResponse.text)
-        const selects: SelectsType = JSON.parse(selectsResponse.text)
+        const selectsJSON: SelectsType = JSON.parse(selectsResponse.text)
 
         // fill each "select" field found by the LLM
-        for (const selectLabel in selects) {
-            await currentPage.getByLabel(selectLabel).selectOption(selects[selectLabel])
+        for (const {fieldName, value} of selectsJSON["selects"]) {
+            await currentPage.locator(`input[name="${fieldName}"]`).selectOption(value)
         }
 
         // find all fillable "input" fields in the HTML
         const inputsResponse = await generateText({
             model,
+            output: Output.object({
+                schema: InputsSchema
+            }),
             prompt:`
                 Here's the HTML of a page containing a form:
                 ${pageHTML}
                 Here's a workflow:
                 ${workflow}
-                Find all "input" field names in the HTML and return a single JSON of the form {fieldName: value, ...}.
-                Replace each fieldName with the actual field name,
-                and value with the value that would be filled in from the Student information in (2) from the workflow.
-                Do NOT include names for "select" fields in the JSON.
+                Find all "input" field names in the HTML.
+
+                fieldName is the actual field name
+                and value is the value that would be filled in from the Student information in (2) from the workflow.
+
                 If there's no corresponding value from the Student information, don't include the fieldName.
                 The JSON should only include fieldNames for the fields that are present in the HTML.
-                Return ONLY the JSON, no explanations and no "json" in the output.
             `
         })
         console.log(inputsResponse.text)
-        const inputs: InputsType = JSON.parse(inputsResponse.text)
+        const inputsJSON: InputsType = JSON.parse(inputsResponse.text)
 
         // fill out each "input" field found by the LLM
-        for (const inputLabel in inputs) {
-            console.log(inputLabel)
-            await currentPage.locator(`input[name="${inputLabel}"]`).fill(inputs[inputLabel])
+        for (const {fieldName, value} of inputsJSON["inputs"]) {
+            await currentPage.locator(`input[name="${fieldName}"]`).fill(value)
         }
     }
 
