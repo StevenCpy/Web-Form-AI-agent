@@ -14,8 +14,8 @@ type CollapsiblesType = {
 
 type fieldsType = {
     fields: {
-        fieldName: string
-        type: string
+        formFieldName: string
+        workflowFieldName: string
         value: string
     }[]
 }
@@ -33,7 +33,7 @@ async function main() {
             Return only the navigation URL and nothing else.
         `
     })
-    console.log(websiteURLResponse.text)
+    // console.log(websiteURLResponse.text)
     const currentPage = await createSession(websiteURLResponse.text)
     let pageHTML = await currentPage.content()
 
@@ -50,16 +50,19 @@ async function main() {
             Find the names of all collapsible sections, and return which ones are expanded or hidden by looking at all the clues combined.
         `
     })
-    console.log(collapsiblesResponse.text)
+    // console.log(collapsiblesResponse.text)
     const collapsiblesJSON: CollapsiblesType = JSON.parse(collapsiblesResponse.text)
+    console.log("Parsed sections...")
 
     // open all collapsibles and fill out the fields
     for (const {collapsibleName, collapsed} of collapsiblesJSON["collapsibles"]) {
+        console.log(`Filling ${collapsibleName} section...`)
+
         // open collapsible if it's collapsed
         if (collapsed) {
             await currentPage.getByRole("button", { name: collapsibleName }).click()
-            pageHTML = await currentPage.content()
         }
+        pageHTML = await currentPage.content()
 
         // find all fillable fields in the HTML
         const fieldsResponse = await generateText({
@@ -67,26 +70,28 @@ async function main() {
             output: Output.object({
                 schema: fieldsSchema
             }),
+            temperature: 0,
             prompt:`
                 Here's the HTML of a page containing a form:
                 ${pageHTML}
                 Here's a workflow:
                 ${workflow}
-                Find all fields.
-
-                If there's no corresponding value from the workflow, don't include the fieldName.
-                The JSON should only include fieldNames for the fields that are present in the HTML.
+                Find all fields in the form.
+                formFieldName should be the exact name of the field as written in the form HTML.
+                workflowFieldName should be the corresponding name of the field from the workflow.
+                Only include entries for fields that you can see in the HTML.
             `
         })
         console.log(fieldsResponse.text)
         const fieldsJSON: fieldsType = JSON.parse(fieldsResponse.text)
 
-        // fill each "select" field found by the LLM
-        for (const {fieldName, type, value} of fieldsJSON["fields"]) {
-            if (type == "select") {
-                await currentPage.locator(`select[name="${fieldName}"]`).selectOption(value)
-            } else if (type == "input") {
-                await currentPage.locator(`input[name="${fieldName}"]`).fill(value)
+        // fill each field found by the LLM
+        for (const {formFieldName, workflowFieldName, value} of fieldsJSON["fields"]) {
+            const fieldType = await currentPage.locator(`[name="${formFieldName}"]`).evaluate(element => element.tagName)
+            if (fieldType == "SELECT") {
+                await currentPage.locator(`select[name="${formFieldName}"]`).selectOption(value)
+            } else if (fieldType == "INPUT") {
+                await currentPage.locator(`input[name="${formFieldName}"]`).fill(value)
             }
         }
     }

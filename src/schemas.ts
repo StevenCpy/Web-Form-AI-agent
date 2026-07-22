@@ -12,9 +12,9 @@ export const CollapsiblesSchema = z.object({
 export const fieldsSchema = z.object({
     fields: z.array(
         z.object({
-            fieldName: z.string().describe("name of field in form"),
-            type: z.enum(["select", "input"]).describe("field type"),
-            value: z.string().describe("value from the workflow information corresponding to that field")
+            formFieldName: z.string().describe("name property of field in form"),
+            workflowFieldName: z.string().describe("field described in workflow that matches the one in the form"),
+            value: z.string().describe("value from the workflow information that would fill that field")
         })
     )
 })
