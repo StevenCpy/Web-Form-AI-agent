@@ -28,35 +28,52 @@ async function main() {
     const counter = new tokensCounter()
 
     // STEP 1 - Go to website's URL
-    const {text: websiteURLResponseText, usage: websiteURLUsage} = await generateText({
-        model,
-        prompt:`
-            Here's a workflow:
-            ${workflow}
-            Return only the navigation URL and nothing else.
-        `
-    })
-    // console.log(websiteURLResponse.text)
-    counter.incrementConsumption(websiteURLUsage)
+    let websiteURLResponseText = ""
+    try {
+        const {text, usage} = await generateText({
+            model,
+            prompt:`
+                Here's a workflow:
+                ${workflow}
+                Return only the navigation URL and nothing else.
+            `
+        })
+        websiteURLResponseText = text
+        counter.incrementConsumption(usage)
+        console.log(websiteURLResponseText)
+    } catch (error) {
+        console.log("Error calling LLM API: ", error)
+        return
+    }
+    // this will open an interactive Chrome page
     const currentPage = await createSession(websiteURLResponseText)
+    const browser = currentPage.context().browser()
     let formHTML = await sanitizeHTML(currentPage.locator("form"))
 
-    const {text: collapsiblesResponseText, usage: collapsiblesUsage} = await generateText({
-        model,
-        output: Output.object({
-            schema: CollapsiblesSchema
-        }),
-        temperature: 0,
-        prompt:`
-            Here's the HTML of a page containing a form: 
-            ${formHTML}
-            Find the names of all collapsible sections, and return which ones are expanded or hidden by looking at all the clues combined.
-        `
-    })
-    // console.log(collapsiblesResponse.text)
-    counter.incrementConsumption(collapsiblesUsage)
+    console.log("Parsing sections...")
+    let collapsiblesResponseText = ""
+    try {
+        const {text, usage} = await generateText({
+            model,
+            output: Output.object({
+                schema: CollapsiblesSchema
+            }),
+            temperature: 0,
+            prompt:`
+                Here's the HTML of a page containing a form: 
+                ${formHTML}
+                Find the names of all collapsible sections, and return which ones are expanded or hidden by looking at all the clues combined.
+            `
+        })
+        collapsiblesResponseText = text
+        counter.incrementConsumption(usage)
+        console.log(collapsiblesResponseText)
+    } catch (error) {
+        console.log("Error calling LLM API: ", error)
+        await browser?.close()
+        return
+    }
     const collapsiblesJSON: CollapsiblesType = JSON.parse(collapsiblesResponseText)
-    console.log("Parsed sections...")
 
     // open all collapsibles and fill out the fields
     for (const {collapsibleName, collapsed} of collapsiblesJSON["collapsibles"]) {
@@ -69,25 +86,34 @@ async function main() {
         }
 
         // find all fillable fields in the HTML
-        const {text: fieldsResponseText, usage: fieldsUsage} = await generateText({
-            model,
-            output: Output.object({
-                schema: fieldsSchema
-            }),
-            temperature: 0,
-            prompt:`
-                Here's the HTML of a page containing a form:
-                ${formHTML}
-                Here's a workflow:
-                ${workflow}
-                Find all fields in the form.
-                formFieldName should be the exact name of the field as written in the form HTML.
-                workflowFieldName should be the corresponding name of the field from the workflow.
-                Only include entries for fields that you can see in the HTML.
-            `
-        })
-        console.log(fieldsResponseText)
-        counter.incrementConsumption(fieldsUsage)
+        let fieldsResponseText = ""
+        try {
+            const {text, usage} = await generateText({
+                model,
+                output: Output.object({
+                    schema: fieldsSchema
+                }),
+                temperature: 0,
+                prompt:`
+                    Here's the HTML of a page containing a form:
+                    ${formHTML}
+                    Here's a workflow:
+                    ${workflow}
+                    Find all fields in the form.
+                    formFieldName should be the exact name of the field as written in the form HTML.
+                    workflowFieldName should be the corresponding name of the field from the workflow.
+                    value should be the corresponding value that would fit in that field.
+                    Only include entries for fields that you can see in the HTML.
+                `
+            })
+            fieldsResponseText = text
+            counter.incrementConsumption(usage)
+            console.log(fieldsResponseText)
+        } catch (error) {
+            console.log("Error calling LLM API: ", error)
+            await browser?.close()
+            return
+        }
         const fieldsJSON: fieldsType = JSON.parse(fieldsResponseText)
 
         // fill each field found by the LLM
@@ -103,8 +129,12 @@ async function main() {
 
     // submit the form
     await currentPage.getByText("Submit").click()
-    console.log("Form submitted")
+    console.log("Form submitted!")
 
+    // close the browser
+    await browser?.close()
+
+    // print total tokens consumption
     counter.printConsumption()
 }
 

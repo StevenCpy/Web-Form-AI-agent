@@ -14,7 +14,7 @@ export const fieldsSchema = z.object({
         z.object({
             formFieldName: z.string().describe("name property of field in form"),
             workflowFieldName: z.string().describe("field described in workflow that matches the one in the form"),
-            value: z.string().describe("value from the workflow information that would fill that field")
+            value: z.string().describe("value from the workflow information that would fit in that field")
         })
     )
 })
