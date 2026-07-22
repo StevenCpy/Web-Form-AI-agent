@@ -38,7 +38,7 @@ async function main() {
     // console.log(websiteURLResponse.text)
     counter.incrementConsumption(websiteURLUsage)
     const currentPage = await createSession(websiteURLResponseText)
-    let pageHTML = await currentPage.content()
+    let formHTML = await currentPage.locator("form").innerHTML()
 
     const {text: collapsiblesResponseText, usage: collapsiblesUsage} = await generateText({
         model,
@@ -48,7 +48,7 @@ async function main() {
         temperature: 0,
         prompt:`
             Here's the HTML of a page containing a form: 
-            ${pageHTML}
+            ${formHTML}
             Find the names of all collapsible sections, and return which ones are expanded or hidden by looking at all the clues combined.
         `
     })
@@ -64,8 +64,8 @@ async function main() {
         // open collapsible if it's collapsed
         if (collapsed) {
             await currentPage.getByRole("button", { name: collapsibleName }).click()
+            formHTML = await currentPage.locator("form").innerHTML()
         }
-        pageHTML = await currentPage.content()
 
         // find all fillable fields in the HTML
         const {text: fieldsResponseText, usage: fieldsUsage} = await generateText({
@@ -76,7 +76,7 @@ async function main() {
             temperature: 0,
             prompt:`
                 Here's the HTML of a page containing a form:
-                ${pageHTML}
+                ${formHTML}
                 Here's a workflow:
                 ${workflow}
                 Find all fields in the form.
