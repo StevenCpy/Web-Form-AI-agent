@@ -22,3 +22,7 @@ app.post("/api/agent", async (req: Request, res: Response) => {
 app.listen(PORT, () => {
     console.log(`AI agent listening on port ${PORT}`)
 })
+
+import { workflow } from "./data/workflow"
+
+queryAgentLoop(workflow)

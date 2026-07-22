@@ -10,14 +10,15 @@ export function createNavigateToURLTool(page: Page) {
             navigationURL: z.string()
         }),
         outputSchema: z.object({
-            formHTML: z.string()
+            formHTML: z.string().describe("The sanitized HTML of the form."),
+            result: z.string().describe("The result of using the tool.")
         }),
         // open an interactive Chrome page to the website
         execute: async ({ navigationURL }) => {
             console.log(`Navigating to ${navigationURL}`)
             await page.goto(navigationURL)
             const formHTML = await sanitizeHTML(page.locator("form"))
-            return {formHTML: formHTML}
+            return {formHTML: formHTML, result: `Successfully navigated to ${navigationURL}`}
         }
     })
     return navigateToURLTool

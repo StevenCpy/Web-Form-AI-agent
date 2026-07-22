@@ -5,17 +5,18 @@ import { fieldsSchema } from "../schemas"
 
 export function createFillFieldsTool(page: Page) {
     const fillFieldsTool = tool({
-        description: "Finds the fields in the HTML, and fills them out.  It can only be used when you are provided with HTML.",
+        description: "Finds unfilled fields in the HTML, and fills them out.  It can only be used after you are provided with HTML.",
         inputSchema: fieldsSchema,
         outputSchema: z.object({
-            status: z.string()
+            result: z.string().describe("The result of using the tool.")
         }),
         // fill out fields
         execute: async ({ fields }) => {
+            const formFieldNames = fields.map(field => field.formFieldName)
             console.log(`
                 Filling out fields...
                 Fields:
-                ${fields}
+                ${formFieldNames.join(",")}
             `)
             for (const {formFieldName, value} of fields) {
                 const fieldType = await page.locator(`[name="${formFieldName}"]`).evaluate(element => element.tagName)
@@ -25,8 +26,7 @@ export function createFillFieldsTool(page: Page) {
                     await page.locator(`[name="${formFieldName}"]`).fill(value)
                 }
             }
-
-            return {"status": "success"}
+            return {"result": `Successfully filled out the following fields: ${formFieldNames.join(",")}`}
         }
     })
     return fillFieldsTool

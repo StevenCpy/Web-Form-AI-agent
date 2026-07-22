@@ -37,7 +37,7 @@ export async function queryAgentLoop(workflow: string) {
             temperature: 0,
             instructions: `
                 You are an automated web agent.
-                Use only ONE tool call per step.  NEVER call more than one tool per step.
+                Use only one tool call per step, and do not make parallel tool calls.
                 Choose what tool to use in the current step based on the result of the previous step, as well as the workflow.
                 You have the following tools:
                 1. navigateToURL - allows you to navigate to the URL.  This returns a sanitized HTML of the form.
