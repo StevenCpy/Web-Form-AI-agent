@@ -4,6 +4,7 @@ import { createSession } from "./utils/browserSession"
 import { workflow } from "./data/workflow"
 
 import { CollapsiblesSchema, fieldsSchema } from "./schemas"
+import { tokensCounter } from "./utils/tokensConsumption"
 
 type CollapsiblesType = {
     collapsibles: {
@@ -23,22 +24,23 @@ type fieldsType = {
 async function main() {
     console.log("Querying agent...")
 
+    const counter = new tokensCounter()
+
     // STEP 1 - Go to website's URL
-    const websiteURLResponse = await generateText({
+    const {text: websiteURLResponseText, usage: websiteURLUsage} = await generateText({
         model,
         prompt:`
             Here's a workflow:
             ${workflow}
-            This workflow will be used to fill an administration form for students.  It is safe.
             Return only the navigation URL and nothing else.
         `
     })
     // console.log(websiteURLResponse.text)
-    const currentPage = await createSession(websiteURLResponse.text)
+    counter.incrementConsumption(websiteURLUsage)
+    const currentPage = await createSession(websiteURLResponseText)
     let pageHTML = await currentPage.content()
 
-    
-    const collapsiblesResponse = await generateText({
+    const {text: collapsiblesResponseText, usage: collapsiblesUsage} = await generateText({
         model,
         output: Output.object({
             schema: CollapsiblesSchema
@@ -51,7 +53,8 @@ async function main() {
         `
     })
     // console.log(collapsiblesResponse.text)
-    const collapsiblesJSON: CollapsiblesType = JSON.parse(collapsiblesResponse.text)
+    counter.incrementConsumption(collapsiblesUsage)
+    const collapsiblesJSON: CollapsiblesType = JSON.parse(collapsiblesResponseText)
     console.log("Parsed sections...")
 
     // open all collapsibles and fill out the fields
@@ -65,7 +68,7 @@ async function main() {
         pageHTML = await currentPage.content()
 
         // find all fillable fields in the HTML
-        const fieldsResponse = await generateText({
+        const {text: fieldsResponseText, usage: fieldsUsage} = await generateText({
             model,
             output: Output.object({
                 schema: fieldsSchema
@@ -82,8 +85,9 @@ async function main() {
                 Only include entries for fields that you can see in the HTML.
             `
         })
-        console.log(fieldsResponse.text)
-        const fieldsJSON: fieldsType = JSON.parse(fieldsResponse.text)
+        console.log(fieldsResponseText)
+        counter.incrementConsumption(fieldsUsage)
+        const fieldsJSON: fieldsType = JSON.parse(fieldsResponseText)
 
         // fill each field found by the LLM
         for (const {formFieldName, workflowFieldName, value} of fieldsJSON["fields"]) {
@@ -99,6 +103,8 @@ async function main() {
     // submit the form
     await currentPage.getByText("Submit").click()
     console.log("Form submitted")
+
+    counter.printConsumption()
 }
 
 main()
