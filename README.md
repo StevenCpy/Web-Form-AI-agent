@@ -1,4 +1,12 @@
-GOAL: Developing an AI agent that takes a workflow to automatically fill out a web form.
+**GOAL:**\
+Developing an AI agent that takes a workflow to automatically fill out a web form.
+
+AI agent filling out web form given workflow:
+
+https://github.com/user-attachments/assets/a3b9c47d-cc4b-4299-a9b1-c8513f6acef1
+
+Tracing how AI agent executes the workflow:\
+<img width="20%" alt="Agent executing workflow" src="https://github.com/user-attachments/assets/f2490021-ad15-4800-b425-1c912f2e0386" />
 
 This is an example workflow:
 1. Go to https://student-web-form.vercel.app/
