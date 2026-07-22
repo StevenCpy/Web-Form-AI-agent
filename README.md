@@ -19,7 +19,8 @@ HOW TO RUN:
     1. OLLAMA_KEEP_ALIVE=-1.  This will keep the model loaded in memory even if it's idle.
     2. "ollama run llama3.1:8b".  This will download the model (4.9GB), making it accessible offline, then run it.  RAM usage minimum 5.6GB.
     Wait until the model starts running.
-    3. "npm run dev".  This starts the AI agent server, and sends the workflow example (/src/data/workflow.ts) to it.
+    3. "npm run dev".  This starts the AI agent server.
+    4. "npm run example".  This sends the workflow example (/src/data/workflow.ts) to the server.
 Modify the workflow to fill out another web form on another website.
 
 - Unload the model from memory with "ollama stop llama3.1:8b".
