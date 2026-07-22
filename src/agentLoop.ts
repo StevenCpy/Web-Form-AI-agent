@@ -9,6 +9,7 @@ import { sanitizeHTML } from "./utils/sanitizeHTML"
 
 // tools
 import { createNavigateToURLTool } from "./tools/navigateToURLTool"
+import { createFillFieldsTool } from "./tools/fillFieldsTool"
 
 export async function queryAgentLoop(workflow: string) {
     console.log("Querying agent...")
@@ -22,6 +23,8 @@ export async function queryAgentLoop(workflow: string) {
             Here's a workflow:
             ${workflow}
             Your job is to complete this workflow.
+            1. Navigate to the URL
+            2. Fill in the fields you see in the HTML once you get the HTML
         `
     }]
 
@@ -29,20 +32,36 @@ export async function queryAgentLoop(workflow: string) {
     let i = 0
     while (i < maxLoops) {
         // ask the LLM to use a tool
-        const {text, usage, toolResults} = await generateText({
+        const {text, usage, toolResults, steps} = await generateText({
             model,
             temperature: 0,
+            instructions: `
+                You are an automated web agent.
+                Use only ONE tool call per step.  NEVER call more than one tool per step.
+                Choose what tool to use in the current step based on the result of the previous step, as well as the workflow.
+                You have the following tools:
+                1. navigateToURL - allows you to navigate to the URL.  This returns a sanitized HTML of the form.
+                2. fillFields - this finds all the fields visible in the HTML of the page, and fills them out.
+            `,
             messages: messages,
             tools: {
-                navigateToURL: createNavigateToURLTool(currentPage)
+                navigateToURL: createNavigateToURLTool(currentPage),
+                fillFields: createFillFieldsTool(currentPage)
             },
-            stopWhen: stepCountIs(3)
+            stopWhen: stepCountIs(5)
         })
 
         ++i
 
         console.log(text)
-        console.log(toolResults)
+        console.log()
+        steps.forEach(step => {
+            console.log(step.stepNumber)
+            step.toolCalls.forEach(toolCall => console.log(toolCall, toolCall.toolName, toolCall.input))
+            console.log()
+        })
+        messages.forEach(message => console.log(message))
+
         counter.incrementConsumption(usage)
         counter.printConsumption()
     }
