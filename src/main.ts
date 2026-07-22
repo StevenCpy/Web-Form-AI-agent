@@ -12,9 +12,8 @@ app.post("/api/agent", async (req: Request, res: Response) => {
 
     console.log("Calling agent...")
     await queryAgent(workflow)
-    console.log("Agent completed task!")
 
-    res.json({status: "success", message: "Agent completed task!"})
+    res.json({status: "success", message: "Workflow sent to agent!"})
 })
 
 app.listen(PORT, () => {

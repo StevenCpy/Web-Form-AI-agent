@@ -54,19 +54,19 @@ export async function queryAgent(workflow: string) {
         stopWhen: stepCountIs(10) // to prevent agent from looping infinitely if it cannot execute the workflow
     })
 
-    console.log()
-    steps.forEach(step => {
-        console.log(step.stepNumber)
-        step.toolCalls.forEach(toolCall => console.log(toolCall.toolName, toolCall.input))
-        console.log()
-    })
-    console.log()
-    messages.forEach(message => console.log(message))
+    // console.log()
+    // steps.forEach(step => {
+    //     console.log(step.stepNumber)
+    //     step.toolCalls.forEach(toolCall => console.log(toolCall.toolName, toolCall.input))
+    //     console.log()
+    // })
+    // console.log()
+    // messages.forEach(message => console.log(message))
 
     counter.incrementConsumption(usage)
 
-    // // close the browser
-    // await browser?.close()
+    // close the browser
+    await currentPage.context().browser()?.close()
 
     // print total tokens consumption
     counter.printConsumption()

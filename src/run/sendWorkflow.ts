@@ -5,7 +5,7 @@ type ServerResponseType = {
     message: string
 }
 
-async function sendWorkflowToServer(workflow: string) {
+async function sendWorkflowToServer(workflow: string) : Promise<void> {
     try {
         const response = await fetch("http://localhost:3000/api/agent", {
             method: "POST",
