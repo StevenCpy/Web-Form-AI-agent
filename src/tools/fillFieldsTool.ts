@@ -5,7 +5,7 @@ import { fieldsSchema } from "../schemas"
 
 export function createFillFieldsTool(page: Page) {
     const fillFieldsTool = tool({
-        description: "Finds unfilled fields in the HTML, and fills them out.  It can only be used after you are provided with HTML.",
+        description: "Finds unfilled fields in the HTML, and fills them out.  It can only be used after you are provided with HTML.  If a field is in the workflow but not in the HTML, do not inclued it.",
         inputSchema: fieldsSchema,
         outputSchema: z.object({
             result: z.string().describe("The result of using the tool.")
@@ -26,7 +26,11 @@ export function createFillFieldsTool(page: Page) {
                     await page.locator(`[name="${formFieldName}"]`).fill(value)
                 }
             }
-            return {"result": `Successfully filled out the following fields: ${formFieldNames.join(",")}`}
+            if (fields.length == 0) { // no fields were filled
+                return {"result": "No fields were filled"}
+            } else {
+                return {"result": `Successfully filled out the following fields: ${formFieldNames.join(",")}`}
+            }
         }
     })
     return fillFieldsTool
