@@ -1,6 +1,6 @@
 import { Locator } from "playwright"
 
-export async function sanitizeHTML(locator: Locator) : Promise<String> {
+export async function sanitizeHTML(locator: Locator) : Promise<string> {
     const sanitizedHTML = await locator.evaluate(html => {
         const htmlCopy = html.cloneNode(true) as HTMLElement
 
