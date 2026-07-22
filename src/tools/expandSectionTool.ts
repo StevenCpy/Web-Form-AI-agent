@@ -16,7 +16,7 @@ export function createExpandSectionTool(page: Page) {
             formHTML: z.string().describe("The updated form HTML after expanding the section."),
             result: z.string().describe("The result of using the tool.")
         }),
-        // expand section if not already expanded
+        // expand section if not already expanded and return the updated form HTML if any section was expanded
         execute: async ({ sectionName, collapsed }) => {
             console.log(`
                 Attempting to expand section...

@@ -1,137 +1,72 @@
-import { generateText, Output } from "ai"
+import { generateText, ModelMessage, Output, stepCountIs } from "ai"
 import model from "./model"
+
+// utils
 import { createSession } from "./utils/browserSession"
-
-import { CollapsiblesSchema, fieldsSchema } from "./schemas"
 import { tokensCounter } from "./utils/tokensConsumption"
-import { sanitizeHTML } from "./utils/sanitizeHTML"
 
-type CollapsiblesType = {
-    collapsibles: {
-        collapsibleName: string
-        collapsed: boolean
-    }[]
-}
-
-type fieldsType = {
-    fields: {
-        formFieldName: string
-        workflowFieldName: string
-        value: string
-    }[]
-}
+// tools
+import { createNavigateToURLTool } from "./tools/navigateToURLTool"
+import { createFillFieldsTool } from "./tools/fillFieldsTool"
+import { createExpandSectionTool } from "./tools/expandSectionTool"
+import { createSubmitFormTool } from "./tools/submitFormTool"
 
 export async function queryAgent(workflow: string) {
     console.log("Querying agent...")
 
-    const counter = new tokensCounter()
+    const counter = new tokensCounter() // for tracking tokens consumption
 
-    // STEP 1 - Go to website's URL
-    let websiteURLResponseText = ""
-    try {
-        const {text, usage} = await generateText({
-            model,
-            prompt:`
-                Here's a workflow:
-                ${workflow}
-                Return only the navigation URL and nothing else.
-            `
-        })
-        websiteURLResponseText = text
-        counter.incrementConsumption(usage)
-        console.log(websiteURLResponseText)
-    } catch (error) {
-        console.log("Error calling LLM API: ", error)
-        return
-    }
-    // this will open an interactive Chrome page
-    const currentPage = await createSession(websiteURLResponseText)
-    const browser = currentPage.context().browser()
-    let formHTML = await sanitizeHTML(currentPage.locator("form"))
+    const currentPage = await createSession()
+    const messages: ModelMessage[] = [{
+        role: "user",
+        content: `
+            Here's a workflow:
+            ${workflow}
+            Your job is to complete this workflow.
+            1. Navigate to the URL.
+            2. Fill in the fields you see in the HTML once you get the HTML.
+            3. Expand any hidden section you find and fill out those fields as well.
+            4. Submit the form.
+        `
+    }]
 
-    console.log("Parsing sections...")
-    let collapsiblesResponseText = ""
-    try {
-        const {text, usage} = await generateText({
-            model,
-            output: Output.object({
-                schema: CollapsiblesSchema
-            }),
-            temperature: 0,
-            prompt:`
-                Here's the HTML of a page containing a form: 
-                ${formHTML}
-                Find the names of all collapsible sections, and return which ones are expanded or hidden by looking at all the clues combined.
-            `
-        })
-        collapsiblesResponseText = text
-        counter.incrementConsumption(usage)
-        console.log(collapsiblesResponseText)
-    } catch (error) {
-        console.log("Error calling LLM API: ", error)
-        await browser?.close()
-        return
-    }
-    const collapsiblesJSON: CollapsiblesType = JSON.parse(collapsiblesResponseText)
+    // ask the LLM to use a tool
+    const {text, usage, steps} = await generateText({
+        model,
+        temperature: 0,
+        instructions: `
+            You are an automated web agent.
+            Use only one tool call per step, and do not make parallel tool calls.
+            Choose what tool to use in the current step based on the result of the previous step, as well as the workflow.
+            You have the following tools:
+            1. navigateToURL - this allows you to navigate to the URL.  This returns a sanitized HTML of the form.
+            2. fillFields - this finds all the fields visible in the HTML of the page, and fills them out.
+            3. expandSection - this expands a section, possibly uncovering more fields.  If you opened a section, fill out those fields before trying to open another section.
+            4. submitForm - this submits the form after opening all sections and filling out all the fields.
+        `,
+        messages: messages,
+        tools: {
+            navigateToURL: createNavigateToURLTool(currentPage),
+            fillFields: createFillFieldsTool(currentPage),
+            expandSection: createExpandSectionTool(currentPage),
+            submitForm: createSubmitFormTool(currentPage)
+        },
+        stopWhen: stepCountIs(10) // to prevent agent from looping infinitely if it cannot execute the workflow
+    })
 
-    // open all collapsibles and fill out the fields
-    for (const {collapsibleName, collapsed} of collapsiblesJSON["collapsibles"]) {
-        console.log(`Filling ${collapsibleName} section...`)
+    console.log()
+    steps.forEach(step => {
+        console.log(step.stepNumber)
+        step.toolCalls.forEach(toolCall => console.log(toolCall.toolName, toolCall.input))
+        console.log()
+    })
+    console.log()
+    messages.forEach(message => console.log(message))
 
-        // open collapsible if it's collapsed
-        if (collapsed) {
-            await currentPage.getByRole("button", { name: collapsibleName }).click()
-            formHTML = await sanitizeHTML(currentPage.locator("form"))
-        }
+    counter.incrementConsumption(usage)
 
-        // find all fillable fields in the HTML
-        let fieldsResponseText = ""
-        try {
-            const {text, usage} = await generateText({
-                model,
-                output: Output.object({
-                    schema: fieldsSchema
-                }),
-                temperature: 0,
-                prompt:`
-                    Here's the HTML of a page containing a form:
-                    ${formHTML}
-                    Here's a workflow:
-                    ${workflow}
-                    Find all fields in the form.
-                    formFieldName should be the exact name of the field as written in the form HTML.
-                    workflowFieldName should be the corresponding name of the field from the workflow.
-                    value should be the corresponding value that would fit in that field.
-                    Only include entries for fields that you can see in the HTML.
-                `
-            })
-            fieldsResponseText = text
-            counter.incrementConsumption(usage)
-            console.log(fieldsResponseText)
-        } catch (error) {
-            console.log("Error calling LLM API: ", error)
-            await browser?.close()
-            return
-        }
-        const fieldsJSON: fieldsType = JSON.parse(fieldsResponseText)
-
-        // fill each field found by the LLM
-        for (const {formFieldName, workflowFieldName, value} of fieldsJSON["fields"]) {
-            const fieldType = await currentPage.locator(`[name="${formFieldName}"]`).evaluate(element => element.tagName)
-            if (fieldType == "SELECT") {
-                await currentPage.locator(`select[name="${formFieldName}"]`).selectOption(value)
-            } else if (fieldType == "INPUT") {
-                await currentPage.locator(`input[name="${formFieldName}"]`).fill(value)
-            }
-        }
-    }
-
-    // submit the form
-    await currentPage.getByText("Submit").click()
-    console.log("Form submitted!")
-
-    // close the browser
-    await browser?.close()
+    // // close the browser
+    // await browser?.close()
 
     // print total tokens consumption
     counter.printConsumption()

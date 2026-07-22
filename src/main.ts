@@ -1,6 +1,5 @@
 import express, { type Express, type Request, type Response } from "express"
 import { queryAgent } from "./agent"
-import { queryAgentLoop } from "./agentLoop"
 
 // Express.js server listens to requests on port 3000
 // On receiving a POST request, endpoint extracts workflow and calls AI agent to exeute the workflow
@@ -12,8 +11,7 @@ app.post("/api/agent", async (req: Request, res: Response) => {
     const { workflow } = req.body
 
     console.log("Calling agent...")
-    // await queryAgent(workflow)
-    await queryAgentLoop(workflow)
+    await queryAgent(workflow)
     console.log("Agent completed task!")
 
     res.json({status: "success", message: "Agent completed task!"})
@@ -22,7 +20,3 @@ app.post("/api/agent", async (req: Request, res: Response) => {
 app.listen(PORT, () => {
     console.log(`AI agent listening on port ${PORT}`)
 })
-
-import { workflow } from "./data/workflow"
-
-queryAgentLoop(workflow)
