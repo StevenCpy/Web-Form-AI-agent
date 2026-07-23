@@ -10,14 +10,20 @@ const PORT = 3000
 app.post("/api/agent", async (req: Request, res: Response) => {
     const { workflow } = req.body
 
+    // no workflow in request body
+    if (!workflow) {
+        console.error("Error extracting workflow from request")
+        return res.status(400).json({status: "fail", message: "Could not extract workflow from request"})
+    }
+
     console.log("Calling agent...")
     try {
         await queryAgent(workflow)
-        res.json({status: "success", message: "Workflow sent to agent!"})
     } catch (error) {
         console.error("Error calling agent")
-        res.json({status: "fail", message: "Error calling agent"})
+        return res.status(500).json({status: "fail", message: "Error calling agent"})
     }
+    return res.status(200).json({status: "success", message: "Agent successfully executed workflow!"})
 })
 
 app.listen(PORT, () => {
