@@ -11,9 +11,13 @@ app.post("/api/agent", async (req: Request, res: Response) => {
     const { workflow } = req.body
 
     console.log("Calling agent...")
-    await queryAgent(workflow)
-
-    res.json({status: "success", message: "Workflow sent to agent!"})
+    try {
+        await queryAgent(workflow)
+        res.json({status: "success", message: "Workflow sent to agent!"})
+    } catch (error) {
+        console.error("Error calling agent")
+        res.json({status: "fail", message: "Error calling agent"})
+    }
 })
 
 app.listen(PORT, () => {

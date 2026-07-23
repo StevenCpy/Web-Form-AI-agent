@@ -66,7 +66,7 @@ export async function queryAgent(workflow: string) {
 
         counter.incrementConsumption(usage)
     } catch (error) {
-        console.log("Error calling LLM API: ", error)
+        console.error("Error calling LLM API: ", error)
         throw(new Error("ERROR: Agent could not execute workflow"))
     } finally {
         // close the browser
