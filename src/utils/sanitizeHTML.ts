@@ -4,7 +4,7 @@ export async function sanitizeHTML(locator: Locator) : Promise<string> {
     const sanitizedHTML = await locator.evaluate(html => {
         const htmlCopy = html.cloneNode(true) as HTMLElement
 
-        // remove svgs and "class" attribute
+        // remove "class" and "style" attributes, and svgs
         htmlCopy.querySelectorAll("svg").forEach(svg => svg.remove())
         htmlCopy.querySelectorAll("*").forEach(element => element.removeAttribute("class"))
         htmlCopy.querySelectorAll("*").forEach(element => element.removeAttribute("style"))
