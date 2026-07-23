@@ -28,7 +28,7 @@ export function createExpandSectionTool(page: Page) {
                 const updatedFormHTML = await sanitizeHTML(page.locator("form"))
                 return {formHTML: updatedFormHTML, "result": `Successfully expanded section ${sectionName}.  Updated HTML with possibly new fields`}
             } else {
-                const formHTML = await page.locator("form").innerHTML()
+                const formHTML = await sanitizeHTML(page.locator("form"))
                 return {formHTML: formHTML, "result": `Section: ${sectionName} was already expanded`}
             }
         }
