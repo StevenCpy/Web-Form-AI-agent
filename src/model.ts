@@ -3,6 +3,6 @@ import "dotenv/config"
 import { google } from "@ai-sdk/google"
 
 // const model = ollama("llama3.1:8b")
-const model = google("gemini-3.6-flash")
+const model = google("gemini-3.5-flash")
 
 export default model
