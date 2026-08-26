@@ -4,10 +4,10 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install && npx playwright install
+RUN npm install && npx playwright install --with-deps chromium
 
 COPY . .
 
-CMD ["npm", "run", "dev", "--port=3000"]
+CMD ["npm", "run", "dev", "--", "--port=3000"]
 
 EXPOSE 3000
