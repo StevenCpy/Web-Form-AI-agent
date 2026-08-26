@@ -2,6 +2,9 @@ import { tool } from "ai"
 import { Page } from "playwright"
 import { z } from "zod"
 
+// WebSockets
+import { type Socket, type DefaultEventsMap } from "socket.io"
+
 const fieldsSchema = z.object({
     fields: z.array(
         z.object({
@@ -12,7 +15,7 @@ const fieldsSchema = z.object({
     )
 })
 
-export function createFillFieldsTool(page: Page) {
+export function createFillFieldsTool(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, page: Page) {
     const fillFieldsTool = tool({
         description: "Finds unfilled fields in the HTML, and fills them out.  It can only be used after you are provided with HTML.  If a field is in the workflow but not in the HTML, do not include it.",
         inputSchema: fieldsSchema,
@@ -35,6 +38,12 @@ export function createFillFieldsTool(page: Page) {
                     await page.locator(`[name="${formFieldName}"]`).fill(value)
                 }
             }
+
+            // emit screenshot along with notification
+            const screenshot_buf = await page.screenshot()
+            const screenshot_base64 = screenshot_buf.toString("base64")
+            socket.emit("screenshot", ["Filled out current section...", screenshot_base64])
+
             if (fields.length == 0) { // no fields were filled
                 return {"result": "No fields were filled"}
             } else {
@@ -42,5 +51,6 @@ export function createFillFieldsTool(page: Page) {
             }
         }
     })
+
     return fillFieldsTool
 }

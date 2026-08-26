@@ -1,9 +1,17 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { io } from "socket.io-client"
 
 import { workflow } from './exampleWorkflow'
 
 import './App.css'
+
+function Base64Image( {base64ImageURL}: {base64ImageURL: string} ) {
+	return (
+		<div id="base64-img-container">
+			<img src={`data:image/png;base64,${base64ImageURL}`} />
+		</div>
+	)
+}
 
 function NoScreenshotText() {
 	return (
@@ -13,20 +21,36 @@ function NoScreenshotText() {
 	)
 }
 
+const socket = io("http://localhost:3000")
+
 function App() {
 	const [prompt, setPrompt] = useState("")
 	const [notification, setNotification] = useState("")
 	const [screenshot, setScreenshot] = useState<string|null>(null)
 
-	const socket = useMemo(() => io("http://localhost:3000"), [])
-	socket.on("notification", (msg: string) => {
-		setNotification(msg)
-	})
+	useEffect(() => {
+		socket.on("notification", (msg: string) => {
+			setNotification(msg)
+		})
+
+		socket.on("screenshot", (res: string[]) => {
+			const [ res_notification, res_screenshotBase64 ] = res
+			setNotification(res_notification)
+			setScreenshot(res_screenshotBase64)
+		})
+
+		return () => {
+			socket.off("notification")
+			socket.off("screenshot")
+		}
+	}, [])
 
 	return (
 		<div id="content-page">
+			<p>Welcome to my AI agent.  Write a workflow in the prompt and watch the agent fill out the form live!</p>
 			<div id="frame-container">
-				{screenshot ?? <NoScreenshotText />}
+				<p>Live stream of form completion:</p>
+				{screenshot ? <Base64Image base64ImageURL={screenshot} /> : <NoScreenshotText />}
 			</div>
 
 			<div id="prompt-container">

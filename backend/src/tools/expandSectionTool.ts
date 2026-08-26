@@ -33,5 +33,6 @@ export function createExpandSectionTool(page: Page) {
             }
         }
     })
+
     return expandSectionTool
 }

@@ -27,7 +27,7 @@ io.on("connection", (socket) => {
     socket.on("callAgent", async (workflow: string) => {
         console.log("Calling agent...")
         try {
-            await queryAgent(io, workflow)
+            await queryAgent(socket, workflow)
         } catch (error) {
             console.error("Error calling agent")
             io.emit("notification", "Status: Fail, Error calling agent")
