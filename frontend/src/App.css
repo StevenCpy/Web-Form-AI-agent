@@ -18,6 +18,14 @@
 
 #prompt-container textarea {
     resize: none;
-    width: 50%;
+    width: 75%;
     height: 75%;
+}
+
+#example-workflow-button {
+    background-color: green;
+}
+
+#example-workflow-button:hover {
+    cursor: pointer;
 }
