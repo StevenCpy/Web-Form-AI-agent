@@ -38,7 +38,21 @@
     height: 75%;
 }
 
-#example-workflow-button {
+#buttons-container {
+    display: flex;
+    flex-direction: row;
+    width: 75%;
+}
+
+#example-and-clear-buttons-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    margin-right: auto;
+}
+
+#example-workflow-button,
+#submit-button {
     background-color: green;
 }
 
@@ -47,6 +61,7 @@
 }
 
 #example-workflow-button:hover,
-#clear-button:hover {
+#clear-button:hover,
+#submit-button:hover {
     cursor: pointer;
 }
