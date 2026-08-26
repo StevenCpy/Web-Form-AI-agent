@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { io } from "socket.io-client"
 
 import { workflow } from './exampleWorkflow'
@@ -46,7 +46,9 @@ function App() {
 	return (
 		<div id="content-page">
 			<p>Welcome to my AI agent.<br />
-			Write a workflow in the prompt and watch the agent fill out the form live!</p>
+			Write a workflow in the prompt and watch the agent fill out the form live!<br />
+			- Steven </p>
+
 			<FrameContainer screenshot={screenshot} />
 
 			<div id="events-list">

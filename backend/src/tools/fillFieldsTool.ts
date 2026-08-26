@@ -40,7 +40,7 @@ export function createFillFieldsTool(socket: Socket<DefaultEventsMap, DefaultEve
             }
 
             // emit screenshot along with notification
-            const screenshot_buf = await page.screenshot()
+            const screenshot_buf = await page.screenshot({ fullPage: true })
             const screenshot_base64 = screenshot_buf.toString("base64")
             socket.emit("screenshot", ["Filled out a section...", screenshot_base64])
 

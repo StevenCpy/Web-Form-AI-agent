@@ -52,7 +52,7 @@ export async function queryAgent(socket: Socket<DefaultEventsMap, DefaultEventsM
             tools: {
                 navigateToURL: createNavigateToURLTool(socket, currentPage),
                 fillFields: createFillFieldsTool(socket, currentPage),
-                expandSection: createExpandSectionTool(currentPage),
+                expandSection: createExpandSectionTool(socket, currentPage),
                 submitForm: createSubmitFormTool(socket, currentPage)
             },
             stopWhen: stepCountIs(10) // to prevent agent from looping infinitely if it cannot execute the workflow

@@ -23,7 +23,7 @@ export function createNavigateToURLTool(socket: Socket<DefaultEventsMap, Default
             const formHTML = await pruneHTML(page.locator("form"))
 
             // emit screenshot along with notification
-            const screenshot_buf = await page.screenshot()
+            const screenshot_buf = await page.screenshot({ fullPage: true })
             const screenshot_base64 = screenshot_buf.toString("base64")
             socket.emit("screenshot", [`Navigated to ${navigationURL}...`, screenshot_base64])
 

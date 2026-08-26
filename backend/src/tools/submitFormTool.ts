@@ -20,7 +20,7 @@ export function createSubmitFormTool(socket: Socket<DefaultEventsMap, DefaultEve
             await page.locator("form").locator('button[type="submit"]').click()
 
             // emit screenshot along with notification
-            const screenshot_buf = await page.screenshot()
+            const screenshot_buf = await page.screenshot({ fullPage: true })
             const screenshot_base64 = screenshot_buf.toString("base64")
             socket.emit("screenshot", ["Submitted form...", screenshot_base64])
 

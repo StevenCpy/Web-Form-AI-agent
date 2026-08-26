@@ -3,12 +3,15 @@ import { Page } from "playwright"
 import { z } from "zod"
 import { pruneHTML } from "../utils/pruneHTML"
 
+// WebSockets
+import { type Socket, type DefaultEventsMap } from "socket.io"
+
 const sectionSchema = z.object({
     sectionName: z.string().describe("The name of the collapsible section"),
     collapsed: z.boolean().describe("true if section is collapsed/hidden, false otherwise")
 })
 
-export function createExpandSectionTool(page: Page) {
+export function createExpandSectionTool(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, page: Page) {
     const expandSectionTool = tool({
         description: "Expands a collapsed/hidden section in the form.  It can only be used after you are provided with HTML.  Only attempt to expand a section you have not tried to expand previously.",
         inputSchema: sectionSchema,
@@ -26,6 +29,12 @@ export function createExpandSectionTool(page: Page) {
             if (collapsed) {
                 await page.getByRole("button", { name: sectionName }).click()
                 const updatedFormHTML = await pruneHTML(page.locator("form"))
+
+                // emit screenshot along with notification
+                const screenshot_buf = await page.screenshot({ fullPage: true })
+                const screenshot_base64 = screenshot_buf.toString("base64")
+                socket.emit("screenshot", [`Expanded ${sectionName} section...`, screenshot_base64])
+            
                 return {formHTML: updatedFormHTML, "result": `Successfully expanded section ${sectionName}.  Updated HTML with possibly new fields`}
             } else {
                 const formHTML = await pruneHTML(page.locator("form"))

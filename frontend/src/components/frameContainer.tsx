@@ -19,7 +19,8 @@ function NoScreenshotText() {
 function FrameContainer( {screenshot}: {screenshot: string|null} ) {
     return (
         <div id="text-and-screenshot-container">
-            <p><b>Live stream of form completion via WebSockets:</b></p>
+            <p><b>Live stream of form completion via WebSockets:</b><br />
+			(Agent can be slow depending on Gemini-3.6-flash load)</p>
             <div id="screenshot-container">
                 {screenshot ? <Base64Image base64ImageURL={screenshot} /> : <NoScreenshotText />}
             </div>
