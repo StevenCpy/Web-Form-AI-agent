@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx ./src/main.ts",
     "build": "tsc",
-    "start": "node ./dist/main.js",
+    "start": "node ./dist/src/main.js",
     "example": "tsx ./src/run/sendWorkflow.ts"
   },
   "devDependencies": {
