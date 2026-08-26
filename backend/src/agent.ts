@@ -11,8 +11,11 @@ import { createFillFieldsTool } from "./tools/fillFieldsTool"
 import { createExpandSectionTool } from "./tools/expandSectionTool"
 import { createSubmitFormTool } from "./tools/submitFormTool"
 
-export async function queryAgent(workflow: string) {
+import { type Server, type DefaultEventsMap } from "socket.io"
+
+export async function queryAgent(io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, workflow: string) {
     console.log("Querying agent...")
+    io.emit("notification", "Filling out form")
 
     const counter = new tokensCounter() // for tracking tokens consumption
 

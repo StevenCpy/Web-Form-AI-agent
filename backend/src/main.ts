@@ -18,6 +18,11 @@ const PORT = 3000
 
 io.on("connection", (socket) => {
     console.log("New user connected!")
+    io.emit("notification", "Connected to server...")
+
+    io.on("disconnect", (socket) => {
+        console.log("User disconnected!")
+    })
 })
 
 app.post("/api/agent", async (req: Request, res: Response) => {
@@ -31,7 +36,7 @@ app.post("/api/agent", async (req: Request, res: Response) => {
 
     console.log("Calling agent...")
     try {
-        await queryAgent(workflow)
+        await queryAgent(io, workflow)
     } catch (error) {
         console.error("Error calling agent")
         return res.status(500).json({status: "fail", message: "Error calling agent"})

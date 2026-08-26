@@ -6,6 +6,22 @@
 
 #frame-container {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 5% 20%;
+    background-color: white;
+    color: black;
+}
+
+#no-screenshot-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
 #prompt-container {
@@ -26,6 +42,11 @@
     background-color: green;
 }
 
-#example-workflow-button:hover {
+#clear-button {
+    background-color: red;
+}
+
+#example-workflow-button:hover,
+#clear-button:hover {
     cursor: pointer;
 }
