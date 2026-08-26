@@ -11,8 +11,11 @@ import { createFillFieldsTool } from "./tools/fillFieldsTool"
 import { createExpandSectionTool } from "./tools/expandSectionTool"
 import { createSubmitFormTool } from "./tools/submitFormTool"
 
-export async function queryAgent(workflow: string) {
+import { type Socket, type DefaultEventsMap } from "socket.io"
+
+export async function queryAgent(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, workflow: string) {
     console.log("Querying agent...")
+    socket.emit("notification", "Filling out form...")
 
     const counter = new tokensCounter() // for tracking tokens consumption
 
@@ -47,10 +50,10 @@ export async function queryAgent(workflow: string) {
             `,
             messages: messages,
             tools: {
-                navigateToURL: createNavigateToURLTool(currentPage),
-                fillFields: createFillFieldsTool(currentPage),
-                expandSection: createExpandSectionTool(currentPage),
-                submitForm: createSubmitFormTool(currentPage)
+                navigateToURL: createNavigateToURLTool(socket, currentPage),
+                fillFields: createFillFieldsTool(socket, currentPage),
+                expandSection: createExpandSectionTool(socket, currentPage),
+                submitForm: createSubmitFormTool(socket, currentPage)
             },
             stopWhen: stepCountIs(10) // to prevent agent from looping infinitely if it cannot execute the workflow
         })
@@ -71,6 +74,7 @@ export async function queryAgent(workflow: string) {
     } finally {
         // close the browser
         await currentPage.context().browser()?.close()
+        socket.emit("notification", "Workflow completed...")
     }
 
     // print total tokens consumption
