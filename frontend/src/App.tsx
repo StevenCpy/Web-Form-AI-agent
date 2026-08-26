@@ -40,7 +40,7 @@ function App() {
 	useEffect(() => {
 		if (events.length > EVENTS_LIST_MAX_LENGTH) {
 			const numEventsToDiscard = events.length - EVENTS_LIST_MAX_LENGTH
-			setEvents(prev => prev.slice(numEventsToDiscard-1, events.length))
+			setEvents(prev => prev.slice(numEventsToDiscard, events.length))
 		}
 	}, [events])
 
