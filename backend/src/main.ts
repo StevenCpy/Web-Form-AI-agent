@@ -1,11 +1,24 @@
 import express, { type Express, type Request, type Response } from "express"
+import { createServer } from "node:http"
+import { Server } from "socket.io"
 import { queryAgent } from "./agent"
 
 // Express.js server listens to requests on port 3000
 // On receiving a POST request, endpoint extracts workflow and calls AI agent to exeute the workflow
 const app: Express = express()
+const server = createServer(app)
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173"
+    }
+})
+
 app.use(express.json())
 const PORT = 3000
+
+io.on("connection", (socket) => {
+    console.log("New user connected!")
+})
 
 app.post("/api/agent", async (req: Request, res: Response) => {
     const { workflow } = req.body
@@ -26,6 +39,6 @@ app.post("/api/agent", async (req: Request, res: Response) => {
     return res.status(200).json({status: "success", message: "Agent successfully executed workflow!"})
 })
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`AI agent listening on port ${PORT}`)
 })
