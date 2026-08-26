@@ -19,6 +19,9 @@ export function createSubmitFormTool(socket: Socket<DefaultEventsMap, DefaultEve
             console.log("Submitting the form")
             await page.locator("form").locator('button[type="submit"]').click()
 
+            // wait for toast to appear before taking screenshot
+            await page.waitForSelector("[data-sonner-toast]", {"state": "visible", timeout: 2000})
+
             // emit screenshot along with notification
             const screenshot_buf = await page.screenshot({ fullPage: true })
             const screenshot_base64 = screenshot_buf.toString("base64")
