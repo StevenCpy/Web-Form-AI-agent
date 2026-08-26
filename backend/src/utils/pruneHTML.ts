@@ -1,7 +1,7 @@
 import { Locator } from "playwright"
 
-export async function sanitizeHTML(locator: Locator) : Promise<string> {
-    const sanitizedHTML = await locator.evaluate(html => {
+export async function pruneHTML(locator: Locator) : Promise<string> {
+    const prunedHTML = await locator.evaluate(html => {
         const htmlCopy = html.cloneNode(true) as HTMLElement
 
         // remove "class" and "style" attributes, and svgs
@@ -12,5 +12,5 @@ export async function sanitizeHTML(locator: Locator) : Promise<string> {
         return htmlCopy.innerHTML
     })
 
-    return sanitizedHTML
+    return prunedHTML
 }

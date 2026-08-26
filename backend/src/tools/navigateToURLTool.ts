@@ -1,7 +1,7 @@
 import { tool } from "ai"
 import { Page } from "playwright"
 import { z } from "zod"
-import { sanitizeHTML } from "../utils/sanitizeHTML"
+import { pruneHTML } from "../utils/pruneHTML"
 
 export function createNavigateToURLTool(page: Page) {
     const navigateToURLTool = tool({
@@ -17,7 +17,7 @@ export function createNavigateToURLTool(page: Page) {
         execute: async ({ navigationURL }) => {
             console.log(`Navigating to ${navigationURL}`)
             await page.goto(navigationURL)
-            const formHTML = await sanitizeHTML(page.locator("form"))
+            const formHTML = await pruneHTML(page.locator("form"))
             return {formHTML: formHTML, result: `Successfully navigated to ${navigationURL}`}
         }
     })

@@ -1,7 +1,7 @@
 import { tool } from "ai"
 import { Page } from "playwright"
 import { z } from "zod"
-import { sanitizeHTML } from "../utils/sanitizeHTML"
+import { pruneHTML } from "../utils/pruneHTML"
 
 const sectionSchema = z.object({
     sectionName: z.string().describe("The name of the collapsible section"),
@@ -25,10 +25,10 @@ export function createExpandSectionTool(page: Page) {
             `)
             if (collapsed) {
                 await page.getByRole("button", { name: sectionName }).click()
-                const updatedFormHTML = await sanitizeHTML(page.locator("form"))
+                const updatedFormHTML = await pruneHTML(page.locator("form"))
                 return {formHTML: updatedFormHTML, "result": `Successfully expanded section ${sectionName}.  Updated HTML with possibly new fields`}
             } else {
-                const formHTML = await sanitizeHTML(page.locator("form"))
+                const formHTML = await pruneHTML(page.locator("form"))
                 return {formHTML: formHTML, "result": `Section: ${sectionName} was already expanded`}
             }
         }
