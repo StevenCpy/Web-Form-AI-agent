@@ -6,6 +6,7 @@
   "author": "",
   "scripts": {
     "dev": "tsx ./src/main.ts",
+    "build": "tsx ./src/main.ts",
     "example": "tsx ./src/run/sendWorkflow.ts"
   },
   "devDependencies": {

@@ -9,12 +9,18 @@ const app: Express = express()
 const server = createServer(app)
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173"
+        origin: ["https://web-form-ai-agent.vercel.app/", "http://localhost:5173"]
+
     }
 })
 
 app.use(express.json())
 const PORT = 3000
+
+// allow to ping server and check uptime
+app.get("/health", (req: Request, res: Response) => {
+    return res.status(200).json({"status": "success"})
+})
 
 io.on("connection", (socket) => {
     console.log("New user connected!")
