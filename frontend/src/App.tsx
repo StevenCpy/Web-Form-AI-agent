@@ -4,22 +4,7 @@ import { io } from "socket.io-client"
 import { workflow } from './exampleWorkflow'
 
 import './App.css'
-
-function Base64Image( {base64ImageURL}: {base64ImageURL: string} ) {
-	return (
-		<div id="base64-img-container">
-			<img src={`data:image/png;base64,${base64ImageURL}`} />
-		</div>
-	)
-}
-
-function NoScreenshotText() {
-	return (
-		<div id="no-screenshot-text">
-			Form screenshots will appear here
-		</div>
-	)
-}
+import FrameContainer from './components/frameContainer'
 
 const socket = io("http://localhost:3000")
 
@@ -42,16 +27,15 @@ function App() {
 		return () => {
 			socket.off("notification")
 			socket.off("screenshot")
+			socket.disconnect()
 		}
 	}, [])
 
 	return (
 		<div id="content-page">
-			<p>Welcome to my AI agent.  Write a workflow in the prompt and watch the agent fill out the form live!</p>
-			<div id="frame-container">
-				<p>Live stream of form completion:</p>
-				{screenshot ? <Base64Image base64ImageURL={screenshot} /> : <NoScreenshotText />}
-			</div>
+			<p>Welcome to my AI agent.<br />
+			Write a workflow in the prompt and watch the agent fill out the form live!</p>
+			<FrameContainer screenshot={screenshot} />
 
 			<div id="prompt-container">
 				<div>
