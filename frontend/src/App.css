@@ -4,6 +4,12 @@
     flex: 1;
     text-align: center;
     padding: 1rem;
+    position: relative;
+}
+
+#events-list {
+    position: absolute;
+    margin-left: auto;
 }
 
 #prompt-container {

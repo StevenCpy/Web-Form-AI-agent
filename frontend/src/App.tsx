@@ -8,19 +8,24 @@ import FrameContainer from './components/frameContainer'
 
 const socket = io("http://localhost:3000")
 
+const EVENTS_LIST_MAX_LENGTH = 15
+
 function App() {
 	const [prompt, setPrompt] = useState("")
 	const [notification, setNotification] = useState("")
 	const [screenshot, setScreenshot] = useState<string|null>(null)
+	const [events, setEvents] = useState<String[]>([])
 
 	useEffect(() => {
 		socket.on("notification", (msg: string) => {
 			setNotification(msg)
+			setEvents(prev => [...prev, msg])
 		})
 
 		socket.on("screenshot", (res: string[]) => {
 			const [ res_notification, res_screenshotBase64 ] = res
 			setNotification(res_notification)
+			setEvents(prev => [...prev, res_notification])
 			setScreenshot(res_screenshotBase64)
 		})
 
@@ -31,11 +36,27 @@ function App() {
 		}
 	}, [])
 
+	useEffect(() => {
+		if (events.length > EVENTS_LIST_MAX_LENGTH) {
+			const numEventsToDiscard = events.length - EVENTS_LIST_MAX_LENGTH
+			setEvents(prev => prev.slice(numEventsToDiscard-1, events.length))
+		}
+	}, [events])
+
 	return (
 		<div id="content-page">
 			<p>Welcome to my AI agent.<br />
 			Write a workflow in the prompt and watch the agent fill out the form live!</p>
 			<FrameContainer screenshot={screenshot} />
+
+			<div id="events-list">
+				<p><b>List of events:</b></p>
+				<ul>
+					{events.map((event, index) =>
+						<li key={index}>{index+1}. {event}</li>
+					)}
+				</ul>
+			</div>
 
 			<div id="prompt-container">
 				<div>
