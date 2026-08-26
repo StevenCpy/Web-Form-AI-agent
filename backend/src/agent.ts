@@ -1,4 +1,4 @@
-import { generateText, ModelMessage, Output, stepCountIs } from "ai"
+import { generateText, hasToolCall, ModelMessage, Output, stepCountIs } from "ai"
 import model from "./model"
 
 // utils
@@ -28,6 +28,7 @@ export async function queryAgent(socket: Socket<DefaultEventsMap, DefaultEventsM
             Your job is to complete this workflow.
             1. Navigate to the URL.
             2. Fill in the fields you see in the HTML once you get the HTML.
+            If you already filled all the possible fields, head to step 4.
             3. Expand any hidden section you find and fill out those fields as well.
             4. Submit the form.
         `
@@ -55,7 +56,7 @@ export async function queryAgent(socket: Socket<DefaultEventsMap, DefaultEventsM
                 expandSection: createExpandSectionTool(socket, currentPage),
                 submitForm: createSubmitFormTool(socket, currentPage)
             },
-            stopWhen: stepCountIs(10) // to prevent agent from looping infinitely if it cannot execute the workflow
+            stopWhen: [stepCountIs(10), hasToolCall("submitForm")] // to prevent agent from looping infinitely if it cannot execute the workflow
         })
 
         // console.log()
