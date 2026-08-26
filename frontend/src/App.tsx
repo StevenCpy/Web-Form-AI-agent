@@ -6,7 +6,8 @@ import { workflow } from './exampleWorkflow'
 import './App.css'
 import FrameContainer from './components/frameContainer'
 
-const socket = io("http://localhost:3000")
+const SERVER_URL = "https://web-form-ai-agent.onrender.com"
+const socket = io(SERVER_URL)
 
 const EVENTS_LIST_MAX_LENGTH = 15
 
