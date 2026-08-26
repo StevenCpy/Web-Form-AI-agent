@@ -15,7 +15,7 @@ import { type Server, type DefaultEventsMap } from "socket.io"
 
 export async function queryAgent(io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, workflow: string) {
     console.log("Querying agent...")
-    io.emit("notification", "Filling out form")
+    io.emit("notification", "Filling out form...")
 
     const counter = new tokensCounter() // for tracking tokens consumption
 
