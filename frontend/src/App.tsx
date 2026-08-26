@@ -1,15 +1,23 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { io } from "socket.io-client"
 
 import './App.css'
 
 function App() {
-	io("http://localhost:3000")
+	const [prompt, setPrompt] = useState("")
+
+	const socket = useMemo(() => io("http://localhost:3000"), [])
 
 	return (
-		<>
-			Test
-		</>
+		<div id="content-page">
+			<div id="frame-container">
+
+			</div>
+
+			<div id="prompt-container">
+				<textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Enter workflow..." rows={10} />
+			</div>
+		</div>
 	)
 }
 

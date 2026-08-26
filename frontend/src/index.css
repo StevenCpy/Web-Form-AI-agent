@@ -24,14 +24,9 @@
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-
-	@media (max-width: 1024px) {
-		font-size: 16px;
-	}
 }
 
 #root {
-	width: 1126px;
 	max-width: 100%;
 	border-inline: 1px solid var(--border);
 	min-height: 100svh;
