@@ -9,7 +9,7 @@ const app: Express = express()
 const server = createServer(app)
 const io = new Server(server, {
     cors: {
-        origin: ["https://web-form-ai-agent.vercel.app", "http://localhost:5173"]
+        origin: ["https://www.webformagent.com", "http://localhost:5173"]
 
     }
 })
