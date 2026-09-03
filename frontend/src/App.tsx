@@ -47,6 +47,9 @@ function App() {
 	return (
 		<div id="content-page">
 			<p>Welcome to my AI agent.<br />
+			This client is connected to an Express server where the agent is run.<br />
+			Since the agentic workflow is a blackbox, I send form progress screenshots from backend to frontend
+			via WebSockets.<br />
 			Write a workflow in the prompt and watch the agent fill out the form live!<br />
 			- Steven </p>
 
@@ -68,11 +71,11 @@ function App() {
 
 			<div id="events-list">
 				<p><b>List of events:</b></p>
-				<ul>
+				<ol>
 					{events.map((event, index) =>
-						<li key={index}>{index+1}. {event}</li>
+						<li key={index}>{event}</li>
 					)}
-				</ul>
+				</ol>
 			</div>
 		</div>
 	)

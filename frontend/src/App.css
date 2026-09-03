@@ -6,8 +6,8 @@
     padding: 1rem;
 }
 
-#events-list {
-    margin: auto;
+#events-list ol {
+    list-style-type: decimal;;
 }
 
 #prompt-container {
