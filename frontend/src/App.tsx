@@ -52,15 +52,6 @@ function App() {
 
 			<FrameContainer screenshot={screenshot} />
 
-			<div id="events-list">
-				<p><b>List of events:</b></p>
-				<ul>
-					{events.map((event, index) =>
-						<li key={index}>{index+1}. {event}</li>
-					)}
-				</ul>
-			</div>
-
 			<div id="prompt-container">
 				<div>
 					{notification}
@@ -73,6 +64,15 @@ function App() {
 					</div>
 					<button disabled={prompt === ""} id="submit-button" onClick={ () => {socket.emit("callAgent", prompt); setPrompt("") } }>Submit</button>
 				</div>
+			</div>
+
+			<div id="events-list">
+				<p><b>List of events:</b></p>
+				<ul>
+					{events.map((event, index) =>
+						<li key={index}>{index+1}. {event}</li>
+					)}
+				</ul>
 			</div>
 		</div>
 	)

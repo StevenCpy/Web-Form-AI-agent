@@ -42,11 +42,12 @@ export function createFillFieldsTool(socket: Socket<DefaultEventsMap, DefaultEve
             // emit screenshot along with notification
             const screenshot_buf = await page.screenshot({ fullPage: true })
             const screenshot_base64 = screenshot_buf.toString("base64")
-            socket.emit("screenshot", ["Filled out a section...", screenshot_base64])
 
             if (fields.length == 0) { // no fields were filled
+                socket.emit("screenshot", ["No fields were filled in this section...", screenshot_base64])
                 return {"result": "No fields were filled"}
             } else {
+                socket.emit("screenshot", [`Filled out section with the following fields: ${formFieldNames.join(",")}...`, screenshot_base64])
                 return {"result": `Successfully filled out the following fields: ${formFieldNames.join(",")}`}
             }
         }
