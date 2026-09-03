@@ -10,6 +10,7 @@ import { createNavigateToURLTool } from "./tools/navigateToURLTool"
 import { createFillFieldsTool } from "./tools/fillFieldsTool"
 import { createExpandSectionTool } from "./tools/expandSectionTool"
 import { createSubmitFormTool } from "./tools/submitFormTool"
+import { createHaltReasoningTool } from "./tools/haltReasoningTool"
 
 import { type Socket, type DefaultEventsMap } from "socket.io"
 
@@ -48,15 +49,17 @@ export async function queryAgent(socket: Socket<DefaultEventsMap, DefaultEventsM
                 2. fillFields - this finds all the fields visible in the HTML of the page, and fills them out.
                 3. expandSection - this expands a section, possibly uncovering more fields.  If you opened a section, fill out those fields before trying to open another section.
                 4. submitForm - this submits the form after opening all sections and filling out all the fields.
+                5. haltReasoning - this is used if you need to stop prematurely.  Use this tool if the workflow doesn't have a URL to navigate to, the page is inaccessible, or there are no fields mentioned in the workflow.
             `,
             messages: messages,
             tools: {
                 navigateToURL: createNavigateToURLTool(socket, currentPage),
                 fillFields: createFillFieldsTool(socket, currentPage),
                 expandSection: createExpandSectionTool(socket, currentPage),
-                submitForm: createSubmitFormTool(socket, currentPage)
+                submitForm: createSubmitFormTool(socket, currentPage),
+                haltReasoning: createHaltReasoningTool(socket, currentPage)
             },
-            stopWhen: [stepCountIs(10), hasToolCall("submitForm")] // to prevent agent from looping infinitely if it cannot execute the workflow
+            stopWhen: [stepCountIs(10), hasToolCall("submitForm"), hasToolCall("haltReasoning")] // to prevent agent from looping infinitely if it cannot execute the workflow
         })
 
         // console.log()
