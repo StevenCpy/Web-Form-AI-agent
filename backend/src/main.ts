@@ -24,7 +24,7 @@ app.get("/health", (req: Request, res: Response) => {
 
 io.on("connection", (socket) => {
     console.log("New user connected!")
-    io.emit("notification", "Connected to server...")
+    socket.emit("notification", "Connected to server...")
 
     socket.on("disconnect", () => {
         console.log("User disconnected!")
@@ -36,7 +36,7 @@ io.on("connection", (socket) => {
             await queryAgent(socket, workflow)
         } catch (error) {
             console.error("Error calling agent", error)
-            io.emit("notification", "Status: Fail, Error calling agent")
+            socket.emit("notification", "Status: Fail, Error calling agent")
         }
     })
 })
