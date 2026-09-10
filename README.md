@@ -26,13 +26,14 @@ This is an example workflow:
 The workflow is fed as a prompt to the AI agent, which executes the workflow automatically.
 
 ~~The agent runs on a local llama3.1:8b model as its LLM brain.  The model needs to be running using the Ollama engine.  The prompt has been optimized for that specific model.~~
-The agent runs on the gemini-3.5-flash model as its LLM brain.
+The agent runs on the gemini-3.7-flash model as its LLM brain.
 
-If using frontend [www.webformagent.com](https://www.webformagent.com):
+If using my website [www.webformagent.com](https://www.webformagent.com):
 1. Go to https://www.webformagent.com.
 2. Write the workflow in the prompt.
 3. Submit the workflow.
 
+If running server locally:\
 **HOW TO RUN:**\
 **If using gemini-3.7-flash:**
 1. Set gemini API key environment variable "GOOGLE_GENERATIVE_AI_API_KEY" in an .env file.
